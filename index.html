@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FBA入庫システム 最終版統合提案資料 | 十八願物流株式会社様</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #4F46E5; --primary-dark: #4338CA; --primary-light: #EEF2FF;
+            --success: #10B981; --warning: #F59E0B; --danger: #EF4444;
+            --text-primary: #1F2937; --text-secondary: #6B7280;
+            --border: #E5E7EB; --bg-primary: #FFFFFF; --bg-secondary: #F9FAFB;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+            color: var(--text-primary); line-height: 1.6; min-height: 100vh; }
+        .header { background: var(--bg-primary); border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm); }
+        .header-content { max-width: 1400px; margin: 0 auto; display: flex;
+            justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { display: flex; align-items: center; gap: 0.75rem; }
+        .logo-icon { width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 1.25rem; }
+        .logo-text { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); }
+        .mode-tabs { display: flex; gap: 0.5rem; background: var(--bg-secondary);
+            padding: 0.25rem; border-radius: 12px; }
+        .mode-tab { padding: 0.5rem 1.5rem; border-radius: 10px; border: none;
+            background: transparent; color: var(--text-secondary); font-weight: 600;
+            cursor: pointer; transition: all 0.2s; font-size: 0.875rem; }
+        .mode-tab:hover { background: rgba(79, 70, 229, 0.1); color: var(--primary); }
+        .mode-tab.active { background: var(--primary); color: white; box-shadow: var(--shadow); }
+        .main-container { max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
+        .mode-content { display: none; }
+        .mode-content.active { display: block; animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); } }
+        .function-section { background: var(--bg-primary); border-radius: 16px;
+            padding: 2rem; margin-bottom: 2rem; box-shadow: var(--shadow); }
+        .function-section h2 { color: var(--primary); font-size: 1.5rem;
+            margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
+        .function-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .function-table th { background: var(--bg-secondary); padding: 1rem; text-align: left;
+            font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border); }
+        .function-table td { padding: 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+        .function-table tr:hover { background: var(--bg-secondary); }
+        .difficulty-badge { display: inline-block; padding: 0.25rem 0.75rem;
+            border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .difficulty-low { background: #D1FAE5; color: #065F46; }
+        .difficulty-medium { background: #FEF3C7; color: #92400E; }
+        .difficulty-high { background: #FEE2E2; color: #991B1B; }
+        .cost-badge { display: inline-block; padding: 0.375rem 0.875rem;
+            background: var(--primary-light); color: var(--primary); border-radius: 8px;
+            font-weight: 600; font-size: 0.875rem; }
+        .view-screen-btn { padding: 0.5rem 1rem; background: var(--primary);
+            color: white; border: none; border-radius: 8px; cursor: pointer;
+            font-weight: 600; font-size: 0.875rem; transition: all 0.2s; }
+        .view-screen-btn:hover { background: var(--primary-dark);
+            transform: translateY(-1px); box-shadow: var(--shadow); }
+        .mockup-layout { display: flex; gap: 2rem; }
+        .sidebar { width: 250px; background: var(--bg-primary); border-radius: 16px;
+            padding: 1.5rem; box-shadow: var(--shadow); height: fit-content;
+            position: sticky; top: 100px; }
+        .sidebar-menu { list-style: none; }
+        .sidebar-menu li { margin-bottom: 0.5rem; }
+        .sidebar-menu button { width: 100%; text-align: left; padding: 0.75rem 1rem;
+            background: transparent; border: none; border-radius: 8px;
+            color: var(--text-secondary); font-weight: 500; cursor: pointer;
+            transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem; }
+        .sidebar-menu button:hover { background: var(--bg-secondary); color: var(--primary); }
+        .sidebar-menu button.active { background: var(--primary-light);
+            color: var(--primary); font-weight: 600; }
+        .mockup-content { flex: 1; background: var(--bg-primary); border-radius: 16px;
+            padding: 2rem; box-shadow: var(--shadow); }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.3s ease-in; }
+        .screen h2 { color: var(--primary); font-size: 1.75rem; margin-bottom: 1.5rem;
+            display: flex; align-items: center; gap: 0.75rem; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem; margin-bottom: 2rem; }
+        .kpi-card { background: linear-gradient(135deg, var(--bg-secondary) 0%, white 100%);
+            padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);
+            transition: all 0.2s; }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .kpi-label { color: var(--text-secondary); font-size: 0.875rem;
+            font-weight: 500; margin-bottom: 0.5rem; }
+        .kpi-value { font-size: 2rem; font-weight: 700; color: var(--text-primary);
+            margin-bottom: 0.5rem; }
+        .kpi-change { font-size: 0.875rem; font-weight: 600; }
+        .kpi-change.positive { color: var(--success); }
+        .kpi-change.neutral { color: var(--text-secondary); }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .data-table th { background: var(--bg-secondary); padding: 1rem; text-align: left;
+            font-weight: 600; border-bottom: 2px solid var(--border); }
+        .data-table td { padding: 1rem; border-bottom: 1px solid var(--border); }
+        .data-table tr:hover { background: var(--bg-secondary); }
+        .status-badge { display: inline-block; padding: 0.25rem 0.75rem;
+            border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .status-completed { background: #D1FAE5; color: #065F46; }
+        .status-processing { background: #DBEAFE; color: #1E40AF; }
+        .status-pending { background: #FEF3C7; color: #92400E; }
+        .status-restricted { background: #FEE2E2; color: #991B1B; }
+        .alert { padding: 1rem; border-radius: 8px; margin-bottom: 1rem;
+            display: flex; align-items: flex-start; gap: 0.75rem; }
+        .alert-info { background: #DBEAFE; color: #1E40AF; border: 1px solid #93C5FD; }
+        .alert-success { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+        .alert-warning { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
+        .alert-danger { background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 8px;
+            font-weight: 600; cursor: pointer; transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 0.5rem; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-secondary { background: var(--bg-secondary); color: var(--text-primary);
+            border: 1px solid var(--border); }
+        .form-input { width: 100%; padding: 0.75rem; border: 1px solid var(--border);
+            border-radius: 8px; font-size: 1rem; }
+        .highlight-box { background: #FEF3C7; border-left: 4px solid var(--warning);
+            padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+        @media (max-width: 1024px) {
+            .mockup-layout { flex-direction: column; }
+            .sidebar { width: 100%; position: static; }
+            .sidebar-menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 0.5rem; }
+        }
+        @media (max-width: 768px) {
+            .header-content { flex-direction: column; align-items: stretch; }
+            .mode-tabs { width: 100%; flex-direction: column; }
+            .mode-tab { width: 100%; text-align: center; }
+            .main-container { padding: 0 1rem; }
+            .function-section { padding: 1rem; }
+            .kpi-grid { grid-template-columns: 1fr; }
+            .mockup-content { padding: 1rem; }
+        }
+        @media (max-width: 480px) {
+            .logo-text { font-size: 1rem; }
+            .function-section h2, .screen h2 { font-size: 1.25rem; }
+            .kpi-value { font-size: 1.5rem; }
+            .function-table thead, .data-table thead { display: none; }
+            .function-table tr, .data-table tr { display: block; margin-bottom: 1rem;
+                border: 1px solid var(--border); border-radius: 8px; padding: 1rem; background: white; }
+            .function-table td, .data-table td { display: block; padding: 0.5rem 0; border: none; }
+            .function-table td::before, .data-table td::before { content: attr(data-label);
+                font-weight: 600; display: block; margin-bottom: 0.25rem; color: var(--text-secondary); }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-box"></i></div>
+                <span class="logo-text">FBA入庫システム 最終版統合提案資料</span>
+            </div>
+            <div class="mode-tabs">
+                <button class="mode-tab active" onclick="switchMode('functions')">
+                    📋 機能リスト
+                </button>
+                <button class="mode-tab" onclick="switchMode('warehouse')">
+                    🖥️ 倉庫管理者用
+                </button>
+                <button class="mode-tab" onclick="switchMode('customer')">
+                    👤 顧客用
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- 機能リストモード -->
+        <div id="mode-functions" class="mode-content active">
+            <!-- カテゴリ1: 入庫処理 -->
+            <section class="function-section">
+                <h2><i class="fas fa-truck-loading"></i> カテゴリ1: 入庫処理（必須機能）</h2>
+                <table class="function-table">
+                    <thead>
+                        <tr>
+                            <th>機能ID</th>
+                            <th>機能名</th>
+                            <th>詳細説明</th>
+                            <th>難易度</th>
+                            
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-label="機能ID">1-1</td>
+                            <td data-label="機能名">AI-OCRによる送り状自動読み取り</td>
+                            <td data-label="詳細説明">スマートフォンカメラで配送ラベルを撮影し、EP会員番号（例: EP0256）を自動抽出</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-high">高</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'receiving')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">1-2</td>
+                            <td data-label="機能名">JANコード読み取り</td>
+                            <td data-label="詳細説明">バーコードスキャナーまたはカメラでJANコードを読み取り、商品情報を自動入力</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-low">低</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'receiving')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">1-3</td>
+                            <td data-label="機能名">商品情報自動入力</td>
+                            <td data-label="詳細説明">JANコードから商品名・サイズ・重量などを自動的にフォームに入力</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-medium">中</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'receiving')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">1-4</td>
+                            <td data-label="機能名">入庫データの自動保存</td>
+                            <td data-label="詳細説明">S列(受領日)、T列(入庫数)を自動入力・保存。リアルタイムでデータベースに保存</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-low">低</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'receiving')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">1-5</td>
+                            <td data-label="機能名">納品予定数との自動照合</td>
+                            <td data-label="詳細説明">入庫数（T列）と納品予定数（E列）を自動照合し、不一致時にアラート表示。エラー100%削減</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-medium">中</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'receiving')">画面を見る</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- カテゴリ2: 在庫管理 -->
+            <section class="function-section">
+                <h2><i class="fas fa-boxes"></i> カテゴリ2: 在庫管理（必須機能）</h2>
+                <table class="function-table">
+                    <thead>
+                        <tr>
+                            <th>機能ID</th>
+                            <th>機能名</th>
+                            <th>詳細説明</th>
+                            <th>難易度</th>
+                            
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-label="機能ID">2-1</td>
+                            <td data-label="機能名">リアルタイム在庫管理</td>
+                            <td data-label="詳細説明">入出庫時に在庫数を自動更新。「納品済み」タブのデータをリアルタイムで管理</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-medium">中</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'inventory')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">2-2</td>
+                            <td data-label="機能名">在庫検索・フィルター</td>
+                            <td data-label="詳細説明">会員番号、JANコード、SKUで即座に検索。スプレッドシートのCtrl+F操作を不要に</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-low">低</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'inventory')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">2-3</td>
+                            <td data-label="機能名">在庫一覧表示</td>
+                            <td data-label="詳細説明">全在庫を一覧表示、ソート・絞り込み可能。「納品済み」タブの情報を見やすく表示</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-low">低</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'inventory')">画面を見る</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- カテゴリ3: 出庫・発送 -->
+            <section class="function-section">
+                <h2><i class="fas fa-shipping-fast"></i> カテゴリ3: 出庫・発送（必須機能）</h2>
+                <table class="function-table">
+                    <thead>
+                        <tr>
+                            <th>機能ID</th>
+                            <th>機能名</th>
+                            <th>詳細説明</th>
+                            <th>難易度</th>
+                            
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-label="機能ID">3-1</td>
+                            <td data-label="機能名">100%充填率入力（手動）</td>
+                            <td data-label="詳細説明">輸送箱の充填率を手動で入力。100%到達時にアラート表示</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-low">低</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'shipping')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">3-2</td>
+                            <td data-label="機能名">出庫指示作成</td>
+                            <td data-label="詳細説明">出荷する商品をリスト化、ピッキングリスト生成。商品選定ミスを95%削減</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-medium">中</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'shipping')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">3-3</td>
+                            <td data-label="機能名">出荷完了登録</td>
+                            <td data-label="詳細説明">出荷後、「発送済み」タブへ自動移行。手動コピー作業を完全削除</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-low">低</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'shipping')">画面を見る</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- カテゴリ4: 入庫履歴 -->
+            <section class="function-section">
+                <h2><i class="fas fa-history"></i> カテゴリ4: 入庫履歴（必須機能）</h2>
+                <table class="function-table">
+                    <thead>
+                        <tr>
+                            <th>機能ID</th>
+                            <th>機能名</th>
+                            <th>詳細説明</th>
+                            <th>難易度</th>
+                            
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-label="機能ID">4-1</td>
+                            <td data-label="機能名">入庫履歴一覧</td>
+                            <td data-label="詳細説明">過去の全入庫記録を検索・閲覧。「納品連絡シート」「納品済み」「発送済み」全タブの履歴を統合管理</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-medium">中</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'history')">画面を見る</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- カテゴリ6: EP会員管理 -->
+            <section class="function-section">
+                <h2><i class="fas fa-users"></i> カテゴリ6: EP会員管理（必須機能）</h2>
+                <table class="function-table">
+                    <thead>
+                        <tr>
+                            <th>機能ID</th>
+                            <th>機能名</th>
+                            <th>詳細説明</th>
+                            <th>難易度</th>
+                            
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-label="機能ID">6-1</td>
+                            <td data-label="機能名">会員情報管理</td>
+                            <td data-label="詳細説明">EP会員の基本情報、契約内容を管理。会員番号（例：EP0256）と顧客情報を紐付け</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-medium">中</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'members')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">6-2</td>
+                            <td data-label="機能名">会員別在庫確認</td>
+                            <td data-label="詳細説明">各EP会員の現在庫を即座に表示。問い合わせ対応時間を60%削減</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-low">低</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'members')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">6-3</td>
+                            <td data-label="機能名">会員登録・編集</td>
+                            <td data-label="詳細説明">新規EP会員の登録、情報更新。会員情報の一元管理を実現</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-low">低</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'members')">画面を見る</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- カテゴリ9: 権限・セキュリティ -->
+            <section class="function-section">
+                <h2><i class="fas fa-shield-alt"></i> カテゴリ9: 権限・セキュリティ（必須機能）</h2>
+                <table class="function-table">
+                    <thead>
+                        <tr>
+                            <th>機能ID</th>
+                            <th>機能名</th>
+                            <th>詳細説明</th>
+                            <th>難易度</th>
+                            
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-label="機能ID">9-1</td>
+                            <td data-label="機能名">ユーザー認証</td>
+                            <td data-label="詳細説明">ログインID/パスワードによる認証。システムへの不正アクセスを防止</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-medium">中</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'dashboard')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">9-2</td>
+                            <td data-label="機能名">権限管理</td>
+                            <td data-label="詳細説明">管理者/スタッフ/顧客の3段階権限設定。役割に応じた機能制限、誤操作防止</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-medium">中</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'dashboard')">画面を見る</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+
+
+            <!-- カテゴリ11: 決済・請求管理 -->
+            <section class="function-section">
+                <h2><i class="fas fa-credit-card"></i> カテゴリ11: 決済・請求管理（必須機能）</h2>
+                <table class="function-table">
+                    <thead>
+                        <tr>
+                            <th>機能ID</th>
+                            <th>機能名</th>
+                            <th>詳細説明</th>
+                            <th>難易度</th>
+                            
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-label="機能ID">11-1</td>
+                            <td data-label="機能名">月次請求書自動生成</td>
+                            <td data-label="詳細説明">会員ごとの月次請求書を自動生成</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-medium">中</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'billing')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">11-2</td>
+                            <td data-label="機能名">決済履歴管理</td>
+                            <td data-label="詳細説明">決済の成功・失敗履歴を記録・表示</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-medium">中</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'billing')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">11-3</td>
+                            <td data-label="機能名">決済失敗時のアカウント制限</td>
+                            <td data-label="詳細説明"><strong>決済が失敗したユーザーのアカウントに自動的に制限を掛け、新規入庫を停止。管理者に通知</strong></td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-medium">中</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'billing')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">11-4</td>
+                            <td data-label="機能名">決済リトライ機能</td>
+                            <td data-label="詳細説明">失敗した決済を自動的に再試行</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-medium">中</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'billing')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">11-5</td>
+                            <td data-label="機能名">クレジットカード情報管理</td>
+                            <td data-label="詳細説明">顧客のクレジットカード情報を安全に管理（PCI DSS準拠）</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-high">高</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('customer', 'settings')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">11-6</td>
+                            <td data-label="機能名">請求タイミング設定</td>
+                            <td data-label="詳細説明"><strong>毎月請求 or 都度請求の選択機能。会員ごとの請求サイクル設定</strong></td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-medium">中</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'billing')">画面を見る</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- カテゴリ12: 顧客通知・発送予告機能（新規・最重要） -->
+            <section class="function-section">
+                <h2><i class="fas fa-bell"></i> カテゴリ12: 顧客通知・発送予告機能（必須機能）⭐</h2>
+                <div class="highlight-box">
+                    <strong>⚠️ 最重要機能：</strong> お客様が荷物を発送する前に、倉庫側に商品情報を事前通知する機能です。現状の手動フロー「1.荷受け」の前段階で必要不可欠な機能です。
+                </div>
+                <table class="function-table">
+                    <thead>
+                        <tr>
+                            <th>機能ID</th>
+                            <th>機能名</th>
+                            <th>詳細説明</th>
+                            <th>難易度</th>
+                            
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-label="機能ID">12-1</td>
+                            <td data-label="機能名">発送予告登録（顧客用画面）</td>
+                            <td data-label="詳細説明"><strong>顧客が荷物を発送する前に商品情報を事前登録。JANコード、納品予定数、予定到着日、購入日、大ASIN、SKU、納品先、納品方法など全26列に対応</strong></td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-high">高</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('customer', 'notification')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">12-2</td>
+                            <td data-label="機能名">納品予定リスト管理（倉庫側）</td>
+                            <td data-label="詳細説明">顧客から送られた発送予告を一覧表示。受領時に照合確認。「納品連絡シート」タブと完全互換</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-medium">中</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'notification')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">12-3</td>
+                            <td data-label="機能名">入庫数と購入数の自動照合</td>
+                            <td data-label="詳細説明"><strong>E列（納品予定数）とT列（入庫数）の一致確認。不一致時のアラート表示とエラーレポート生成</strong></td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-medium">中</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'receiving')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">12-4</td>
+                            <td data-label="機能名">自動タブ移行機能</td>
+                            <td data-label="詳細説明"><strong>U列「移行済み」チェック時に自動で「納品済み」タブへ移行。出荷完了時に「発送済み」タブへ自動移行</strong></td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-high">高</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'receiving')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">12-5</td>
+                            <td data-label="機能名">スプレッドシート列構造との完全互換性</td>
+                            <td data-label="詳細説明"><strong>現行の全列（A-Y列以上、26列）に完全対応。購入日、大ASIN、JANコード、SKU、納品予定数、納品先、納品方法、価格カテゴリ、単価、購入先、Amazon URL、ポイント、電脳No.、会計番号、ASIN、本棚番号、受領日、入庫数、保管場所、移行済みなど</strong></td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-high">高</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'notification')">画面を見る</button></td>
+                        </tr>
+                        <tr>
+                            <td data-label="機能ID">12-6</td>
+                            <td data-label="機能名">CSVインポート/エクスポート機能</td>
+                            <td data-label="詳細説明">現行スプレッドシートからのデータ移行とバックアップ用。列構造を維持したままインポート/エクスポート</td>
+                            <td data-label="難易度"><span class="difficulty-badge difficulty-medium">中</span></td>
+                            
+                            <td data-label="操作"><button class="view-screen-btn" onclick="viewScreen('warehouse', 'notification')">画面を見る</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- 将来的なオプション機能 -->
+            <section class="function-section" style="background: linear-gradient(135deg, #F9FAFB 0%, #FFFFFF 100%); border: 2px dashed var(--border);">
+                <h2><i class="fas fa-plus-circle"></i> 将来的なオプション機能</h2>
+                <div class="highlight-box">
+                    <strong>📌 注記：</strong> 以下は将来的に追加可能なオプション機能です。基本システム稼働後、業務拡大に合わせて段階的に実装できます。
+                </div>
+                
+                <table class="function-table">
+                    <thead>
+                        <tr>
+                            <th>カテゴリ</th>
+                            <th>機能概要</th>
+                            <th>期待効果</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-label="カテゴリ"><strong>Amazon SP-API連携</strong></td>
+                            <td data-label="機能概要">在庫同期、FBAラベル自動生成、Shipment Plan作成、追跡番号登録、出荷通知の自動送信</td>
+                            <td data-label="期待効果">Amazon FBAへの出荷作業を完全自動化。現状のステップ10（ラベル出力）を自動化し、Amazon管理画面での手作業を削減</td>
+                        </tr>
+                        <tr>
+                            <td data-label="カテゴリ"><strong>高度な分析・AI機能</strong></td>
+                            <td data-label="機能概要">月次レポート自動生成、データ分析ダッシュボード、需要予測、在庫最適化AI、売れ筋商品分析</td>
+                            <td data-label="期待効果">経営判断に必要なデータを自動生成。レポート作成時間を97%削減し、データに基づく意思決定を支援</td>
+                        </tr>
+                        <tr>
+                            <td data-label="カテゴリ"><strong>通知・アラート強化</strong></td>
+                            <td data-label="機能概要">リアルタイム通知、メール通知、LINE通知連携、Slack連携、カスタム通知ルール設定</td>
+                            <td data-label="期待効果">重要なイベント（入庫完了、在庫不足、決済失敗等）を即座に通知。対応速度を大幅に向上</td>
+                        </tr>
+                        <tr>
+                            <td data-label="カテゴリ"><strong>外部システム連携</strong></td>
+                            <td data-label="機能概要">API提供、Webhook設定、会計ソフト連携（freee、MFクラウド等）、配送業者API連携</td>
+                            <td data-label="期待効果">既存の会計システムや配送管理システムとシームレスに連携。データの二重入力を削減</td>
+                        </tr>
+                        <tr style="background: linear-gradient(135deg, #FEF3C7 0%, #FFFFFF 100%);">
+                            <td data-label="カテゴリ"><strong>🚀 AIアシスタントSaaS提供</strong></td>
+                            <td data-label="機能概要">顧客企業様向けに、Amazon商品リサーチAI、需給予測AI、市場分析AIなどを搭載したSaaSプラットフォームの提供</td>
+                            <td data-label="期待効果">顧客企業様のビジネス拡大を支援し、付加価値の高いサービスとして新たな収益源を創出。競合他社との差別化を実現</td>
+                        </tr>
+                        <tr style="background: linear-gradient(135deg, #FEF3C7 0%, #FFFFFF 100%);">
+                            <td data-label="カテゴリ"><strong>🤝 事業拡大伴走支援</strong></td>
+                            <td data-label="機能概要">新規事業企画、システム戦略立案、DX推進コンサルティング、業務プロセス最適化など、貴社の事業成長を包括的にサポート</td>
+                            <td data-label="期待効果">システム開発だけでなく、ビジネス戦略の立案から実行までトータルで伴走支援。持続的な成長を実現</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                        ※ 詳細な機能仕様・費用は、基本システム稼働後に改めてご提案いたします<br>
+                        ※ お客様の業務拡大状況に合わせて、必要な機能から段階的に導入可能です
+                    </div>
+                </div>
+            </section>
+
+            <!-- 開発費用サマリー -->
+            <section class="function-section">
+                <h2><i class="fas fa-calculator"></i> 開発費用サマリー（最終版）</h2>
+                
+                <div style="background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 100%); padding: 2rem; border-radius: 12px; margin-bottom: 1.5rem; border: 2px solid var(--primary);">
+                    <h3 style="color: var(--primary); margin-bottom: 1.5rem; font-size: 1.25rem;">✅ 今回のご提案：基本システム</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                        <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 0.5rem;">カテゴリ1</div>
+                            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">入庫処理</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--primary);">¥235万円</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">5機能</div>
+                        </div>
+                        <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 0.5rem;">カテゴリ2</div>
+                            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">在庫管理</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--primary);">¥95万円</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">3機能</div>
+                        </div>
+                        <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 0.5rem;">カテゴリ3</div>
+                            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">出庫・発送</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--primary);">¥85万円</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">3機能</div>
+                        </div>
+                        <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 0.5rem;">カテゴリ4</div>
+                            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">入庫履歴</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--primary);">¥35万円</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">1機能</div>
+                        </div>
+                        <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 0.5rem;">カテゴリ6</div>
+                            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">会員管理</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--primary);">¥90万円</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">3機能</div>
+                        </div>
+                        <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 0.5rem;">カテゴリ9</div>
+                            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">権限・セキュリティ</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--primary);">¥80万円</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">2機能</div>
+                        </div>
+                        <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 0.5rem;">カテゴリ11</div>
+                            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">決済・請求</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--primary);">¥280万円</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">6機能</div>
+                        </div>
+                        <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 0.5rem;">カテゴリ12</div>
+                            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">発送予告</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--primary);">¥310万円</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">6機能</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; border: 1px solid var(--border);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <div style="font-size: 1rem; font-weight: 600; color: var(--text-primary);">小計</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">¥1,210万円</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 0.75rem; border-top: 1px solid var(--border);">
+                            <div style="font-size: 1rem; font-weight: 600; color: var(--danger);">お値引き</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger);">-¥110万円</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); padding: 2rem; border-radius: 12px; color: white; text-align: center;">
+                        <div style="font-size: 1rem; opacity: 0.9; margin-bottom: 0.5rem;">基本システム 合計金額</div>
+                        <div style="font-size: 3.5rem; font-weight: 700; margin: 0.5rem 0;">¥1,100万円</div>
+                        <div style="font-size: 1rem; opacity: 0.9;">（税別）</div>
+                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.3);">
+                            <div style="font-size: 0.875rem; opacity: 0.8;">全29機能 | 8カテゴリ | 開発期間：5ヶ月</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ランニングコスト -->
+                <div style="background: linear-gradient(135deg, #FEF3C7 0%, #FFFFFF 100%); padding: 2rem; border-radius: 12px; margin-bottom: 1.5rem; border: 2px solid var(--warning);">
+                    <h3 style="color: var(--warning); margin-bottom: 1.5rem; font-size: 1.25rem;"><i class="fas fa-sync-alt"></i> ランニングコスト（月額・税別）</h3>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                <i class="fas fa-server" style="color: var(--primary); font-size: 1.25rem;"></i>
+                                <div style="font-weight: 600; color: var(--text-primary); font-size: 1rem;">サーバー・インフラ</div>
+                            </div>
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">¥5万円/月</div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">
+                                Amazon Web Services（AWS）<br>
+                                • EC2（仮想サーバー）<br>
+                                • RDS（データベース）<br>
+                                • S3（ファイルストレージ）<br>
+                                • VPC・セキュリティグループ
+                            </div>
+                        </div>
+                        
+                        <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                <i class="fas fa-tools" style="color: #F59E0B; font-size: 1.25rem;"></i>
+                                <div style="font-weight: 600; color: var(--text-primary); font-size: 1rem;">保守・メンテナンス</div>
+                            </div>
+                            <div style="font-size: 2rem; font-weight: 700; color: #F59E0B; margin-bottom: 0.5rem;">¥8万円/月</div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">
+                                <strong>月1人日分の保守対応</strong>（人月150万円 = 1人日8万円）<br>
+                                • システム監視・稼働確認<br>
+                                • バグ修正・軽微な機能改善<br>
+                                • 技術サポート（メール・チャット）<br>
+                                • セキュリティアップデート対応
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: linear-gradient(135deg, #FCD34D 0%, #FDE68A 100%); padding: 1.5rem; border-radius: 12px; text-align: center;">
+                        <div style="font-size: 1rem; font-weight: 600; color: #78350F; margin-bottom: 0.5rem;">月額ランニングコスト 合計</div>
+                        <div style="font-size: 2.5rem; font-weight: 700; color: #92400E;">¥13万円/月</div>
+                        <div style="font-size: 1rem; color: #92400E; margin-top: 0.5rem;">（税別）</div>
+                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(146, 64, 14, 0.3);">
+                            <div style="font-size: 0.875rem; color: #92400E;">年間：¥156万円（税別）</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 1.5rem; padding: 1rem; background: white; border-radius: 8px; border-left: 4px solid var(--warning);">
+                        <div style="display: flex; gap: 0.75rem;">
+                            <i class="fas fa-info-circle" style="color: var(--warning); font-size: 1.25rem; margin-top: 0.125rem;"></i>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">
+                                <strong style="color: var(--text-primary);">補足情報：</strong><br>
+                                • AI-OCR使用料は不要です（フリーライブラリ使用）<br>
+                                • SSL証明書はLet's Encrypt（無料）を使用します<br>
+                                • 利用規模の拡大（会員数増加、処理件数増加）に応じて、サーバースペックの調整が必要になる場合があります
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info" style="margin-top: 1.5rem;">
+                    <i class="fas fa-info-circle"></i>
+                    <div>
+                        <strong>段階的な導入メリット：</strong> まず基本システム（¥1,150万円）で入庫処理から出庫・決済までの業務を完全自動化。その後、Amazon連携や高度な分析機能など、業務の拡大に合わせて機能を追加していくことで、初期投資を抑えながら段階的にシステムを成長させることができます。
+                    </div>
+                </div>
+                <div class="alert alert-success" style="margin-top: 1rem;">
+                    <i class="fas fa-check-circle"></i>
+                    <div><strong>新規追加機能（カテゴリ12）：</strong> お客様からの発送予告機能により、現状の手動フロー「1.荷受け」前の事前準備が自動化されます。スプレッドシートの全26列に完全対応し、データ移行もスムーズです。</div>
+                </div>
+            </section>
+        </div>
+        <!-- 倉庫管理者用モックアップ -->
+        <div id="mode-warehouse" class="mode-content">
+            <div class="mockup-layout">
+                <aside class="sidebar">
+                    <ul class="sidebar-menu">
+                        <li><button class="active" onclick="showScreen('warehouse', 'dashboard')"><i class="fas fa-home"></i> ダッシュボード</button></li>
+                        <li><button onclick="showScreen('warehouse', 'notification')"><i class="fas fa-bell"></i> 納品予定リスト</button></li>
+                        <li><button onclick="showScreen('warehouse', 'receiving')"><i class="fas fa-truck-loading"></i> 入庫処理</button></li>
+                        <li><button onclick="showScreen('warehouse', 'inventory')"><i class="fas fa-warehouse"></i> 在庫管理</button></li>
+                        <li><button onclick="showScreen('warehouse', 'shipping')"><i class="fas fa-shipping-fast"></i> 出庫・発送</button></li>
+                        <li><button onclick="showScreen('warehouse', 'history')"><i class="fas fa-history"></i> 入庫履歴</button></li>
+                        <li><button onclick="showScreen('warehouse', 'members')"><i class="fas fa-users"></i> 会員管理</button></li>
+                        <li><button onclick="showScreen('warehouse', 'billing')"><i class="fas fa-credit-card"></i> 決済・請求</button></li>
+                    </ul>
+                </aside>
+
+                <div class="mockup-content">
+                    <!-- ダッシュボード -->
+                    <div class="screen active" id="warehouse-dashboard">
+                        <h2><i class="fas fa-home"></i> ダッシュボード</h2>
+                        <div class="kpi-grid">
+                            <div class="kpi-card">
+                                <div class="kpi-label">今日の入庫件数</div>
+                                <div class="kpi-value">28件</div>
+                                <div class="kpi-change positive"><i class="fas fa-arrow-up"></i> 前日比 +12%</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-label">平均処理時間</div>
+                                <div class="kpi-value">1.8分</div>
+                                <div class="kpi-change positive"><i class="fas fa-check-circle"></i> 90%削減達成</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-label">今月のミス件数</div>
+                                <div class="kpi-value">0件</div>
+                                <div class="kpi-change positive"><i class="fas fa-check-circle"></i> 100%削減達成</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-label">未処理の納品予告</div>
+                                <div class="kpi-value">5件</div>
+                                <div class="kpi-change neutral">到着予定: 今日</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 納品予定リスト（新規画面） -->
+                    <div class="screen" id="warehouse-notification">
+                        <h2><i class="fas fa-bell"></i> 納品予定リスト管理</h2>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <div>顧客から事前に送信された発送予告を管理します。「納品連絡シート」タブと完全互換の26列構造です。</div>
+                        </div>
+                        
+                        <h3 style="margin-top: 2rem; margin-bottom: 1rem;">到着予定の荷物（今日）</h3>
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <input type="text" class="form-input" placeholder="JANコード、SKU、会員番号で検索" style="flex: 1;">
+                            <button class="btn btn-primary"><i class="fas fa-search"></i> 検索</button>
+                            <button class="btn btn-success"><i class="fas fa-download"></i> CSVエクスポート</button>
+                        </div>
+                        
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>購入日</th>
+                                    <th>EP会員</th>
+                                    <th>JANコード</th>
+                                    <th>SKU</th>
+                                    <th>納品予定数</th>
+                                    <th>納品先</th>
+                                    <th>予定到着日</th>
+                                    <th>ステータス</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td data-label="購入日">2025/06/30</td>
+                                    <td data-label="EP会員">EP0256</td>
+                                    <td data-label="JANコード">4981316414131</td>
+                                    <td data-label="SKU">MM-YGSTA-M3KI</td>
+                                    <td data-label="納品予定数">1個</td>
+                                    <td data-label="納品先">日本倉庫</td>
+                                    <td data-label="予定到着日">2025/11/12</td>
+                                    <td data-label="ステータス"><span class="status-badge status-pending">未着</span></td>
+                                </tr>
+                                <tr style="background: #D1FAE5;">
+                                    <td data-label="購入日">2025/06/04</td>
+                                    <td data-label="EP会員">EP0142</td>
+                                    <td data-label="JANコード">4983164194310</td>
+                                    <td data-label="SKU">AS-RH25-VWHF</td>
+                                    <td data-label="納品予定数">1個</td>
+                                    <td data-label="納品先">Banglasto Demo</td>
+                                    <td data-label="予定到着日">2025/11/12</td>
+                                    <td data-label="ステータス"><span class="status-badge status-completed">受領済み</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="alert alert-success" style="margin-top: 2rem;">
+                            <i class="fas fa-check-circle"></i>
+                            <div><strong>スプレッドシート互換性：</strong> この画面は現行の「納品連絡シート」タブと完全互換です。購入日（A列）、大ASIN（B列）、JANコード（C列）、SKU（D列）、納品予定数（E列）など全26列のデータを管理できます。</div>
+                        </div>
+                    </div>
+
+                    <!-- 入庫処理 -->
+                    <div class="screen" id="warehouse-receiving">
+                        <h2><i class="fas fa-truck-loading"></i> 入庫処理</h2>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <div>AI-OCRとJANコードスキャンで、15-20分かかっていた入庫処理が1-2分に短縮されます。</div>
+                        </div>
+                        
+                        <div style="margin-top: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">1. 配送ラベル撮影（AI-OCR）</label>
+                            <button class="btn btn-primary"><i class="fas fa-camera"></i> カメラで撮影</button>
+                        </div>
+                        
+                        <div style="margin-top: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">EP会員番号</label>
+                            <input type="text" class="form-input" value="EP0256" readonly>
+                        </div>
+                        
+                        <div style="margin-top: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">2. JANコードスキャン</label>
+                            <button class="btn btn-primary"><i class="fas fa-barcode"></i> JANコードをスキャン</button>
+                        </div>
+                        
+                        <div style="margin-top: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">商品情報（自動取得）</label>
+                            <input type="text" class="form-input" value="Plastic Hair Dryer" readonly style="margin-bottom: 0.5rem;">
+                            <input type="text" class="form-input" value="JANコード: 4981316414131" readonly style="margin-bottom: 0.5rem;">
+                            <input type="text" class="form-input" value="SKU: MM-YGSTA-M3KI" readonly>
+                        </div>
+                        
+                        <div style="margin-top: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">納品予定数（E列）</label>
+                            <input type="text" class="form-input" value="1個" readonly>
+                        </div>
+                        
+                        <div style="margin-top: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">入庫数（T列）</label>
+                            <input type="number" class="form-input" value="1">
+                        </div>
+                        
+                        <div class="alert alert-success" style="margin-top: 1.5rem;">
+                            <i class="fas fa-check-circle"></i>
+                            <div><strong>照合結果：</strong> 納品予定数と入庫数が一致しています ✓</div>
+                        </div>
+                        
+                        <div style="margin-top: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">保管場所（自動割当）</label>
+                            <input type="text" class="form-input" value="A-12-3" readonly>
+                        </div>
+                        
+                        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                            <button class="btn btn-success" style="flex: 1;"><i class="fas fa-check"></i> 入庫完了（納品済みタブへ自動移行）</button>
+                            <button class="btn btn-secondary"><i class="fas fa-times"></i> キャンセル</button>
+                        </div>
+                    </div>
+
+                    <!-- 在庫管理 -->
+                    <div class="screen" id="warehouse-inventory">
+                        <h2><i class="fas fa-warehouse"></i> 在庫管理</h2>
+                        <div style="margin-bottom: 1.5rem;">
+                            <input type="text" class="form-input" placeholder="商品名、JANコード、EP会員番号で検索">
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>商品名</th>
+                                    <th>JANコード</th>
+                                    <th>EP会員</th>
+                                    <th>倉庫在庫</th>
+                                    <th>Amazon FBA</th>
+                                    <th>合計</th>
+                                    <th>保管場所</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td data-label="商品名">Plastic Hair Dryer</td>
+                                    <td data-label="JANコード">4981316414131</td>
+                                    <td data-label="EP会員">EP0256</td>
+                                    <td data-label="倉庫在庫">52個</td>
+                                    <td data-label="Amazon FBA">0個</td>
+                                    <td data-label="合計">52個</td>
+                                    <td data-label="保管場所">A-12-3</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 出庫・発送 -->
+                    <div class="screen" id="warehouse-shipping">
+                        <h2><i class="fas fa-shipping-fast"></i> 出庫・発送</h2>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div><strong>重要機能：</strong> 輸送箱が100%埋まった時点で自動検知し、次の箱への移行を促します</div>
+                        </div>
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px; margin-top: 1.5rem;">
+                            <h3 style="margin-bottom: 1rem;">現在の輸送箱: BOX-002</h3>
+                            <p><strong>EP会員:</strong> EP0142</p>
+                            <p><strong>梱包済み商品数:</strong> 45個</p>
+                            <p style="margin-top: 1rem;"><strong>充填率:</strong></p>
+                            <div style="width: 100%; height: 24px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; margin-top: 0.5rem;">
+                                <div style="width: 100%; height: 100%; background: linear-gradient(90deg, var(--success) 0%, #059669 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.875rem;">100%</div>
+                            </div>
+                            <div class="alert alert-success" style="margin-top: 1rem;">
+                                <i class="fas fa-check-circle"></i>
+                                <div><strong>✓ 出荷準備完了：</strong> 輸送箱が100%埋まりました。Amazon FBAラベルを生成してください。</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 入庫履歴 -->
+                    <div class="screen" id="warehouse-history">
+                        <h2><i class="fas fa-history"></i> 入庫履歴</h2>
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                            <input type="date" class="form-input" style="flex: 1;">
+                            <button class="btn btn-primary"><i class="fas fa-search"></i> 検索</button>
+                            <button class="btn btn-success"><i class="fas fa-download"></i> CSVエクスポート</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>日時</th>
+                                    <th>EP会員</th>
+                                    <th>商品名</th>
+                                    <th>JANコード</th>
+                                    <th>数量</th>
+                                    <th>処理時間</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td data-label="日時">2025/11/12 14:32</td>
+                                    <td data-label="EP会員">EP0256</td>
+                                    <td data-label="商品名">Plastic Hair Dryer</td>
+                                    <td data-label="JANコード">4981316414131</td>
+                                    <td data-label="数量">52個</td>
+                                    <td data-label="処理時間">1.6分</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Amazon連携 -->
+                    <!-- 会員管理 -->
+                    <div class="screen" id="warehouse-members">
+                        <h2><i class="fas fa-users"></i> EP会員管理</h2>
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                            <button class="btn btn-success"><i class="fas fa-user-plus"></i> 新規会員登録</button>
+                            <button class="btn btn-primary"><i class="fas fa-envelope"></i> 一括通知送信</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>会員ID</th>
+                                    <th>会社名</th>
+                                    <th>担当者</th>
+                                    <th>請求サイクル</th>
+                                    <th>倉庫在庫</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td data-label="会員ID">EP0256</td>
+                                    <td data-label="会社名">山田商事株式会社</td>
+                                    <td data-label="担当者">山田太郎</td>
+                                    <td data-label="請求サイクル"><span class="status-badge status-completed">毎月請求</span></td>
+                                    <td data-label="倉庫在庫">523個</td>
+                                    <td data-label="操作"><button class="btn btn-primary btn-sm">詳細</button></td>
+                                </tr>
+                                <tr>
+                                    <td data-label="会員ID">EP0142</td>
+                                    <td data-label="会社名">鈴木物産株式会社</td>
+                                    <td data-label="担当者">鈴木花子</td>
+                                    <td data-label="請求サイクル"><span class="status-badge status-processing">都度請求</span></td>
+                                    <td data-label="倉庫在庫">312個</td>
+                                    <td data-label="操作"><button class="btn btn-primary btn-sm">詳細</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 決済・請求 -->
+                    <div class="screen" id="warehouse-billing">
+                        <h2><i class="fas fa-credit-card"></i> 決済・請求管理</h2>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div><strong>アカウント制限機能:</strong> 決済が失敗した会員は自動的に新規入庫が停止されます</div>
+                        </div>
+                        
+                        <h3 style="margin-top: 2rem; margin-bottom: 1rem;">月次請求状況</h3>
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                            <button class="btn btn-success"><i class="fas fa-file-invoice"></i> 請求書一括生成</button>
+                            <button class="btn btn-primary"><i class="fas fa-paper-plane"></i> 請求書送信</button>
+                        </div>
+                        
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>会員ID</th>
+                                    <th>会社名</th>
+                                    <th>請求サイクル</th>
+                                    <th>請求月</th>
+                                    <th>請求額</th>
+                                    <th>決済日</th>
+                                    <th>ステータス</th>
+                                    <th>アカウント状態</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td data-label="会員ID">EP0256</td>
+                                    <td data-label="会社名">山田商事株式会社</td>
+                                    <td data-label="請求サイクル">毎月請求</td>
+                                    <td data-label="請求月">2025年11月</td>
+                                    <td data-label="請求額">¥45,800</td>
+                                    <td data-label="決済日">2025/11/01</td>
+                                    <td data-label="ステータス"><span class="status-badge status-completed">決済完了</span></td>
+                                    <td data-label="アカウント状態"><span class="status-badge status-completed">正常</span></td>
+                                </tr>
+                                <tr>
+                                    <td data-label="会員ID">EP0142</td>
+                                    <td data-label="会社名">鈴木物産株式会社</td>
+                                    <td data-label="請求サイクル">都度請求</td>
+                                    <td data-label="請求月">-</td>
+                                    <td data-label="請求額">-</td>
+                                    <td data-label="決済日">-</td>
+                                    <td data-label="ステータス"><span class="status-badge status-processing">都度決済</span></td>
+                                    <td data-label="アカウント状態"><span class="status-badge status-completed">正常</span></td>
+                                </tr>
+                                <tr style="background: #FEF3C7;">
+                                    <td data-label="会員ID">EP0187</td>
+                                    <td data-label="会社名">田中トレーディング株式会社</td>
+                                    <td data-label="請求サイクル">毎月請求</td>
+                                    <td data-label="請求月">2025年11月</td>
+                                    <td data-label="請求額">¥28,900</td>
+                                    <td data-label="決済日">-</td>
+                                    <td data-label="ステータス"><span class="status-badge status-pending">決済失敗</span></td>
+                                    <td data-label="アカウント状態"><span class="status-badge status-restricted">⚠️ 制限中</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <h3 style="margin-top: 2rem; margin-bottom: 1rem;">制限中のアカウント</h3>
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <div>
+                                <strong>EP0187（田中トレーディング株式会社）</strong><br>
+                                理由: 2025年11月分の決済が失敗しました<br>
+                                制限内容: 新規入庫の受付を停止中<br>
+                                制限開始: 2025/11/05 09:00<br>
+                                <div style="margin-top: 0.75rem;">
+                                    <button class="btn btn-danger" style="margin-right: 0.5rem;"><i class="fas fa-phone"></i> 担当者に連絡</button>
+                                    <button class="btn btn-secondary"><i class="fas fa-unlock"></i> 制限を手動解除</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 顧客用モックアップ -->
+        <div id="mode-customer" class="mode-content">
+            <div class="mockup-layout">
+                <aside class="sidebar">
+                    <ul class="sidebar-menu">
+                        <li><button class="active" onclick="showScreen('customer', 'dashboard')"><i class="fas fa-home"></i> ダッシュボード</button></li>
+                        <li><button onclick="showScreen('customer', 'notification')"><i class="fas fa-bell"></i> 発送予告登録</button></li>
+                        <li><button onclick="showScreen('customer', 'inventory')"><i class="fas fa-warehouse"></i> 在庫確認</button></li>
+                        <li><button onclick="showScreen('customer', 'tracking')"><i class="fas fa-truck"></i> 配送状況</button></li>
+                        <li><button onclick="showScreen('customer', 'history')"><i class="fas fa-history"></i> 入庫履歴</button></li>
+                        <li><button onclick="showScreen('customer', 'reports')"><i class="fas fa-chart-bar"></i> 月次レポート</button></li>
+                        <li><button onclick="showScreen('customer', 'settings')"><i class="fas fa-cog"></i> 設定</button></li>
+                    </ul>
+                </aside>
+
+                <div class="mockup-content">
+                    <!-- ダッシュボード -->
+                    <div class="screen active" id="customer-dashboard">
+                        <h2><i class="fas fa-home"></i> ダッシュボード（顧客用）</h2>
+                        <div class="kpi-grid">
+                            <div class="kpi-card">
+                                <div class="kpi-label">倉庫在庫数</div>
+                                <div class="kpi-value">523個</div>
+                                <div class="kpi-change neutral">日本の倉庫に保管中</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-label">Amazon FBA在庫</div>
+                                <div class="kpi-value">1,247個</div>
+                                <div class="kpi-change positive">販売可能: 1,180個</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-label">配送中</div>
+                                <div class="kpi-value">150個</div>
+                                <div class="kpi-change neutral">予定到着: 11/12</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-label">発送予告（未着）</div>
+                                <div class="kpi-value">5件</div>
+                                <div class="kpi-change neutral">倉庫到着待ち</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 発送予告登録（新規画面・最重要） -->
+                    <div class="screen" id="customer-notification">
+                        <h2><i class="fas fa-bell"></i> 発送予告登録</h2>
+                        <div class="highlight-box">
+                            <strong>⚠️ 重要：</strong> 荷物を倉庫に発送する前に、必ず商品情報を登録してください。これにより倉庫側が事前準備でき、入庫作業がスムーズになります。
+                        </div>
+                        
+                        <h3 style="margin-top: 2rem; margin-bottom: 1rem;">新規発送予告を登録</h3>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">購入日 *</label>
+                                <input type="date" class="form-input" value="2025-11-12">
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">予定到着日 *</label>
+                                <input type="date" class="form-input" value="2025-11-15">
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 1rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">JANコード *</label>
+                            <input type="text" class="form-input" placeholder="4981316414131">
+                        </div>
+                        
+                        <div style="margin-top: 1rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">SKU *</label>
+                            <input type="text" class="form-input" placeholder="MM-YGSTA-M3KI">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem;">
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">大ASIN</label>
+                                <input type="text" class="form-input" placeholder="B01234ABCD">
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">納品予定数 *</label>
+                                <input type="number" class="form-input" value="1">
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem;">
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">納品先 *</label>
+                                <select class="form-input">
+                                    <option>日本倉庫</option>
+                                    <option>Banglasto Demo</option>
+                                    <option>自社配送</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">納品方法 *</label>
+                                <select class="form-input">
+                                    <option>日本倉庫経由</option>
+                                    <option>直接配送</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem;">
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">単価</label>
+                                <input type="number" class="form-input" placeholder="¥1,400">
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">購入先</label>
+                                <input type="text" class="form-input" placeholder="Amazon.co.jp">
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 1rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Amazon URL</label>
+                            <input type="url" class="form-input" placeholder="https://www.amazon.co.jp/...">
+                        </div>
+                        
+                        <div class="alert alert-info" style="margin-top: 1.5rem;">
+                            <i class="fas fa-info-circle"></i>
+                            <div><strong>スプレッドシート互換：</strong> この入力フォームは現行の「納品連絡シート」と完全互換です。登録した情報は自動的に全26列のデータとして保存されます。</div>
+                        </div>
+                        
+                        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                            <button class="btn btn-success" style="flex: 1;"><i class="fas fa-paper-plane"></i> 発送予告を送信</button>
+                            <button class="btn btn-secondary"><i class="fas fa-times"></i> キャンセル</button>
+                        </div>
+                        
+                        <h3 style="margin-top: 3rem; margin-bottom: 1rem;">登録済みの発送予告</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>登録日</th>
+                                    <th>JANコード</th>
+                                    <th>SKU</th>
+                                    <th>数量</th>
+                                    <th>予定到着日</th>
+                                    <th>ステータス</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td data-label="登録日">2025/11/10</td>
+                                    <td data-label="JANコード">4981316414131</td>
+                                    <td data-label="SKU">MM-YGSTA-M3KI</td>
+                                    <td data-label="数量">1個</td>
+                                    <td data-label="予定到着日">2025/11/12</td>
+                                    <td data-label="ステータス"><span class="status-badge status-pending">未着</span></td>
+                                </tr>
+                                <tr>
+                                    <td data-label="登録日">2025/11/08</td>
+                                    <td data-label="JANコード">4983164194310</td>
+                                    <td data-label="SKU">AS-RH25-VWHF</td>
+                                    <td data-label="数量">1個</td>
+                                    <td data-label="予定到着日">2025/11/10</td>
+                                    <td data-label="ステータス"><span class="status-badge status-completed">入庫済み</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 在庫確認 -->
+                    <div class="screen" id="customer-inventory">
+                        <h2><i class="fas fa-warehouse"></i> 在庫確認</h2>
+                        <div style="margin-bottom: 1.5rem;">
+                            <input type="text" class="form-input" placeholder="商品名、JANコードで検索">
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>商品名</th>
+                                    <th>JANコード</th>
+                                    <th>倉庫在庫</th>
+                                    <th>Amazon FBA</th>
+                                    <th>配送中</th>
+                                    <th>合計</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td data-label="商品名">Plastic Hair Dryer</td>
+                                    <td data-label="JANコード">4981316414131</td>
+                                    <td data-label="倉庫在庫">52個</td>
+                                    <td data-label="Amazon FBA">0個</td>
+                                    <td data-label="配送中">0個</td>
+                                    <td data-label="合計">52個</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 配送状況 -->
+                    <div class="screen" id="customer-tracking">
+                        <h2><i class="fas fa-truck"></i> 配送状況</h2>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <div>配送中の商品について、8ステップのタイムラインで進捗を確認できます</div>
+                        </div>
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px; margin-top: 1.5rem;">
+                            <h3>Shipment ID: FBA15GZTQ8VF</h3>
+                            <p><strong>商品:</strong> Plastic Hair Dryer × 52個</p>
+                            <p><strong>発送日:</strong> 2025/11/10</p>
+                            <p><strong>配送業者:</strong> UPS</p>
+                        </div>
+                    </div>
+
+                    <!-- 入庫履歴 -->
+                    <div class="screen" id="customer-history">
+                        <h2><i class="fas fa-history"></i> 入庫履歴</h2>
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                            <input type="date" class="form-input" style="flex: 1;">
+                            <button class="btn btn-primary"><i class="fas fa-search"></i> 検索</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>日時</th>
+                                    <th>商品名</th>
+                                    <th>数量</th>
+                                    <th>処理時間</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td data-label="日時">2025/11/12 14:32</td>
+                                    <td data-label="商品名">Plastic Hair Dryer</td>
+                                    <td data-label="数量">52個</td>
+                                    <td data-label="処理時間">1.6分</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 月次レポート -->
+                    <div class="screen" id="customer-reports">
+                        <h2><i class="fas fa-chart-bar"></i> 月次レポート</h2>
+                        <div class="kpi-grid">
+                            <div class="kpi-card">
+                                <div class="kpi-label">今月の入庫件数</div>
+                                <div class="kpi-value">12件</div>
+                                <div class="kpi-change positive"><i class="fas fa-arrow-up"></i> 前月比 +3件</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-label">今月の入庫個数</div>
+                                <div class="kpi-value">1,850個</div>
+                                <div class="kpi-change positive"><i class="fas fa-arrow-up"></i> 前月比 +15%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 設定 -->
+                    <div class="screen" id="customer-settings">
+                        <h2><i class="fas fa-cog"></i> 設定</h2>
+                        
+                        <h3 style="margin-bottom: 1rem;">請求サイクル設定</h3>
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">現在の設定</label>
+                                <select class="form-input">
+                                    <option selected>毎月請求</option>
+                                    <option>都度請求</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary"><i class="fas fa-save"></i> 変更を保存</button>
+                        </div>
+                        
+                        <h3 style="margin-bottom: 1rem;">通知設定</h3>
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+                            <div style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid var(--border);">
+                                <div>
+                                    <div style="font-weight: 600;">入庫完了通知</div>
+                                    <div style="font-size: 0.875rem; color: var(--text-secondary);">商品の入庫が完了したときにメールで通知</div>
+                                </div>
+                                <input type="checkbox" checked style="width: 20px; height: 20px;">
+                            </div>
+                        </div>
+                        
+                        <h3 style="margin-bottom: 1rem;">クレジットカード情報</h3>
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
+                            <div class="alert alert-info">
+                                <i class="fas fa-lock"></i>
+                                <div>カード情報は安全に暗号化されて保管されます（PCI DSS準拠）</div>
+                            </div>
+                            <p style="margin-top: 1rem;"><strong>カード番号:</strong> **** **** **** 1234</p>
+                            <p><strong>有効期限:</strong> 12/2027</p>
+                            <button class="btn btn-primary" style="margin-top: 1rem;"><i class="fas fa-edit"></i> カード情報を変更</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // モード切替
+        function switchMode(mode) {
+            document.querySelectorAll('.mode-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.mode-content').forEach(content => content.classList.remove('active'));
+            document.getElementById('mode-' + mode).classList.add('active');
+            
+            if (mode === 'warehouse') {
+                showScreen('warehouse', 'dashboard');
+            } else if (mode === 'customer') {
+                showScreen('customer', 'dashboard');
+            }
+        }
+
+        // 画面切替
+        function showScreen(mode, screenName) {
+            const modeElement = document.getElementById('mode-' + mode);
+            if (!modeElement) return;
+            
+            // サイドバーメニューの更新
+            modeElement.querySelectorAll('.sidebar-menu button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const activeButton = Array.from(modeElement.querySelectorAll('.sidebar-menu button'))
+                .find(btn => btn.getAttribute('onclick')?.includes(screenName));
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+            
+            // 画面の切り替え
+            modeElement.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            const targetScreen = modeElement.querySelector('#' + mode + '-' + screenName);
+            if (targetScreen) {
+                targetScreen.classList.add('active');
+            }
+        }
+
+        // 「画面を見る」ボタンからの遷移
+        function viewScreen(mode, screenName) {
+            switchMode(mode);
+            setTimeout(() => {
+                showScreen(mode, screenName);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 100);
+        }
+    </script>
+</body>
+</html>
